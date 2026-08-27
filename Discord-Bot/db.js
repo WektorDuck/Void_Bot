@@ -4,9 +4,12 @@ const db = new Database('database.db');
 db.prepare(`
   CREATE TABLE IF NOT EXISTS complaints (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    role TEXT NOT NULL,
     moderator TEXT NOT NULL,
-    complaint TEXT NOT NULL,
-    url TEXT NOT NULL
+    status TEXT NOT NULL,
+    complaints TEXT,
+    mini_complaints TEXT,
+    appeals TEXT
   )
 `).run();
 
