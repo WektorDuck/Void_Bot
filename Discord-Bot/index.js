@@ -2,6 +2,27 @@ require('dotenv').config();
 const db = require('./db');
 const sheets = require('./google.js');
 const { Client, GatewayIntentBits } = require('discord.js');
+const updateTransitionYearAndMonth = require('./updateTransitionYearAndMonth');
+const updateActivity = require('./updateActivity');
+const updateMain = require('./updateMain');
+const updateDate = require('./updateDate');
+const MONTHS = [
+  "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+  "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
+];
+function getCurrentMonthName() {
+  const now = new Date();
+  return MONTHS[now.getMonth()];
+}
+
+function getPreviousMonthName() {
+  const now = new Date();
+  const index = now.getMonth();
+
+  if (index === 0) return null; // Август — первый месяц
+
+  return MONTHS[index - 1];
+}
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.on('clientReady', () => {
     client.on('interactionCreate', async interaction => {
@@ -708,6 +729,42 @@ if (interaction.commandName === 'статистика') {
 });
 
 syncDatabaseWithSheets(); // запуск при старте
+syncAllStats(); // запуск при старте (иначе update* выполнятся только через 6 часов)
+
+async function syncAllStats() {
+  const currentMonth = getCurrentMonthName();
+  const previousMonth = getPreviousMonthName();
+
+  console.log("Текущий месяц:", currentMonth);
+  console.log("Прошлый месяц:", previousMonth || "нет");
+
+  await updateTransitionYearAndMonth(
+    '1nEu0IVieDulF6LUuhNMkUvL-P36ago9DU5gHHjS4RkA', // Таблица 1
+    'Таблица',
+    '1IAgmB8Hy5x8zHWaHYeQy8-t7qBHQ3U9TEWzP99RsUYs', // Таблица 2 (месяцы)
+    'Модераторы(Дискорд И Дискорд ID)',
+    '10qsQxe5si0xNWhUy4om4ZwD35nX191zCmCSZDHQyzxM', // Таблица 3
+    '2026',
+    currentMonth
+  );
+
+  await updateDate(
+    '10qsQxe5si0xNWhUy4om4ZwD35nX191zCmCSZDHQyzxM',
+    '1IAgmB8Hy5x8zHWaHYeQy8-t7qBHQ3U9TEWzP99RsUYs'
+  );
+
+  await updateActivity(
+    '10qsQxe5si0xNWhUy4om4ZwD35nX191zCmCSZDHQyzxM',
+    currentMonth
+  );
+
+  await updateMain(
+    '10qsQxe5si0xNWhUy4om4ZwD35nX191zCmCSZDHQyzxM',
+    currentMonth,
+    '1QRlQ0HHhejP0I0dY_IYejXhsn_Ac0Wi189gq4l_qQVA'
+  );
+}
+
 
 
 async function syncDatabaseWithSheets() {
@@ -779,7 +836,10 @@ async function syncDatabaseWithSheets() {
 
 
 client.login(process.env.TOKEN);
-setInterval(syncDatabaseWithSheets, 6 * 60 * 60 * 1000); // каждые 6 часов
+setInterval(() => {
+  syncAllStats(); // внутри уже есть updateTransitionYearAndMonth, updateDate, updateActivity, updateMain
+}, 6 * 60 * 60 * 1000);
+setInterval(syncDatabaseWithSheets, 6 * 60 * 60 * 1000);
 const { REST, Routes } = require('discord.js');
 const commands = require('./commands.js');
 
