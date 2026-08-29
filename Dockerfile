@@ -1,4 +1,4 @@
-# syntax=dockerdockerfile1
+# syntax=docker/dockerfile:1
 
 FROM node22-bookworm-slim AS dependencies
 
