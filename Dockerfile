@@ -21,8 +21,7 @@ ENV NODE_ENV=production
 
 COPY --from=dependencies /app/node_modules ./node_modules
 
-# Copy application source. Secrets (.env, Google service-account JSON)
-# should be supplied at runtime, not baked into the image.
-COPY Discord-Bot/index.js .
+# Copy bot source
+COPY Discord-Bot/ ./
 
 CMD ["node", "index.js"]
