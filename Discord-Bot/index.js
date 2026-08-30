@@ -28,6 +28,55 @@ client.on('clientReady', () => {
     client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
+
+
+if (interaction.commandName === 'состав') {
+  await interaction.deferReply();
+
+  try {
+    // Читаем таблицу 4 → лист "Состав"
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: '1QRlQ0HHhejP0I0dY_IYejXhsn_Ac0Wi189gq4l_qQVA',
+      range: 'Состав!A2:Z500'
+    });
+
+    const rows = res.data.values || [];
+
+    if (rows.length === 0) {
+      return interaction.editReply('Таблица состава пуста.');
+    }
+
+    let text = '**:clipboard: Список модераторов:**\n';
+    text += '`Дискорд` (Роль) — `Сикей` Актив\n\n';
+
+    let lastRole = 'Без роли';
+
+    for (const row of rows) {
+      let role = row[0];
+      const discord = row[1] || '—';
+      const sikei = row[2] || '—';
+      const category = row[6] || '—';
+
+      // Если роль пустая — берём последнюю найденную сверху
+      if (role && role.trim() !== '') {
+        lastRole = role;
+      } else {
+        role = lastRole;
+      }
+
+      text += `\`${discord}\` (${role}) — \`${sikei}\` ${category}\n`;
+    }
+
+    await interaction.editReply(text);
+
+  } catch (err) {
+    console.error(err);
+    interaction.editReply('Ошибка чтения таблицы состава.');
+  }
+}
+
+
+
 if (interaction.commandName === 'статистика-модератора') {
   const login = interaction.options.getString('логин');
   await interaction.deferReply();
