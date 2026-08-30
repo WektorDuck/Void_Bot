@@ -3,6 +3,10 @@ const { SlashCommandBuilder } = require('discord.js');
 module.exports = [
 
   new SlashCommandBuilder()
+    .setName('состав')
+    .setDescription('Показать модераторов'),
+
+  new SlashCommandBuilder()
     .setName('статистика')
     .setDescription('Показать статистику модераторов'),
 
